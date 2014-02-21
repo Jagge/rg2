@@ -434,17 +434,21 @@ var rg2 = ( function() {
         type : "events",
         cache : false
       }).done(function(json) {
-        console.log("Events: " + json.data.length);
-        $.each(json.data, function() {
-          events.addEvent(new Event(this));
-        });
-        createEventMenu();
+        processEventsJSON(json);
       }).fail(function(jqxhr, textStatus, error) {
         var err = textStatus + ", " + error;
         console.log("Events request failed: " + err);
       });
 
       setTimeout(function() {$("#rg2-container").show();}, 1000);
+    }
+    
+    function processEventsJSON(json) {
+      console.log("Events: " + json.data.length);
+      $.each(json.data, function() {
+        events.addEvent(new Event(this));
+      });
+      createEventMenu();      
     }
 
     function resetMapState() {
@@ -801,15 +805,7 @@ var rg2 = ( function() {
         type : "courses",
         cache : false
       }).done(function(json) {
-        console.log("Courses: " + json.data.length);
-        $.each(json.data, function() {
-          courses.addCourse(new Course(this, events.isScoreEvent()));
-        });
-        courses.updateCourseDropdown();
-        courses.generateControlList(controls);
-        $("#btn-toggle-controls").show();
-        $("#btn-toggle-names").show();
-        getResults();
+        processCoursesJSON(json);
       }).fail(function(jqxhr, textStatus, error) {
         $('body').css('cursor', 'auto');
         var err = textStatus + ", " + error;
@@ -817,6 +813,19 @@ var rg2 = ( function() {
       });
 
     }
+
+  function processCoursesJSON(json) {
+    console.log("Courses: " + json.data.length);
+    $.each(json.data, function() {
+      courses.addCourse(new Course(this, events.isScoreEvent()));
+    });
+    courses.updateCourseDropdown();
+    courses.generateControlList(controls);
+    $("#btn-toggle-controls").show();
+    $("#btn-toggle-names").show();
+    getResults();
+  }
+
 
     function loadNewMap(mapFile) {
       mapLoadingText = "Map loading...";
@@ -829,16 +838,20 @@ var rg2 = ( function() {
         type : "results",
         cache : false
       }).done(function(json) {
-        console.log("Results: " + json.data.length);
-        var isScoreEvent = events.isScoreEvent();
-        results.addResults(json.data, isScoreEvent);
-        $("#rg2-result-list").accordion("refresh");
-        getGPSTracks();
+        processResultsJSON(json);
       }).fail(function(jqxhr, textStatus, error) {
         $('body').css('cursor', 'auto');
         var err = textStatus + ", " + error;
         console.log("Results request failed: " + err);
       });
+    }
+    
+    function processResultsJSON(json) {
+      console.log("Results: " + json.data.length);
+      var isScoreEvent = events.isScoreEvent();
+      results.addResults(json.data, isScoreEvent);
+      $("#rg2-result-list").accordion("refresh");
+      getGPSTracks();      
     }
 
     function getGPSTracks() {
@@ -847,33 +860,37 @@ var rg2 = ( function() {
         type : "tracks",
         cache : false
       }).done(function(json) {
-        console.log("Tracks: " + json.data.length);
-        results.addTracks(json.data);
-        createCourseMenu();
-        createResultMenu();
-        animation.updateAnimationDetails();
-        $('body').css('cursor', 'auto');
-        $rg2infopanel.tabs("enable", config.TAB_COURSES);
-        $rg2infopanel.tabs("enable", config.TAB_RESULTS);
-        $rg2infopanel.tabs("enable", config.TAB_DRAW);
-        // open courses tab for new event: else stay on draw tab
-        var active = $rg2infopanel.tabs("option", "active");
-        // don't change tab if we have come from DRAW since it means
-        // we have just relaoded following a save
-        if (active !== config.TAB_DRAW) {
-          $rg2infopanel.tabs("option", "active", config.TAB_COURSES);
-        }
-        $rg2infopanel.tabs("refresh");
-        $("#btn-show-splits").show();
-        redraw(false);
+        processTracksJSON(json);
       }).fail(function(jqxhr, textStatus, error) {
         $('body').css('cursor', 'auto');
         var err = textStatus + ", " + error;
         console.log("Tracks request failed: " + err);
       });
     }
-
-    function createCourseMenu() {
+    
+    function processTracksJSON(json) {
+      console.log("Tracks: " + json.data.length);
+      results.addTracks(json.data);
+      createCourseMenu();
+      createResultMenu();
+      animation.updateAnimationDetails();
+      $('body').css('cursor', 'auto');
+      $rg2infopanel.tabs("enable", config.TAB_COURSES);
+      $rg2infopanel.tabs("enable", config.TAB_RESULTS);
+      $rg2infopanel.tabs("enable", config.TAB_DRAW);
+      // open courses tab for new event: else stay on draw tab
+      var active = $rg2infopanel.tabs("option", "active");
+      // don't change tab if we have come from DRAW since it means
+      // we have just relaoded following a save
+      if (active !== config.TAB_DRAW) {
+        $rg2infopanel.tabs("option", "active", config.TAB_COURSES);
+      }
+      $rg2infopanel.tabs("refresh");
+      $("#btn-show-splits").show();
+      redraw(false);     
+    }
+    
+  function createCourseMenu() {
       //loads menu from populated courses array
       $("#rg2-course-table").empty().append(courses.formatCoursesAsTable());
 
@@ -1148,7 +1165,11 @@ var rg2 = ( function() {
       getControlX : getControlX,
       getControlY : getControlY,
       createEventEditDropdown : createEventEditDropdown,
-      showThreeSeconds: showThreeSeconds
+      showThreeSeconds: showThreeSeconds,
+      processEventsJSON: processEventsJSON,
+      processCoursesJSON: processCoursesJSON,
+      processResultsJSON: processResultsJSON,
+      processTracksJSON: processTracksJSON
     };
 
   }());

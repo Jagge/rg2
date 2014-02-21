@@ -20,6 +20,7 @@
     "karma-jasmine": "~0.1.5",
     "karma": "~0.10.9",
     "karma-coverage": "~0.2.0",
-    "karma-chrome-launcher": "~0.1.2"
+    "karma-chrome-launcher": "~0.1.2",
+    "karma-html2js-preprocessor": "~0.1.0"
   }
 }
